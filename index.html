@@ -3,55 +3,334 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Virtual Piano</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            position: relative;
+            overflow: hidden;
+            padding: 2rem;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 50%);
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .title-container {
+            text-align: center;
+            margin-bottom: 3rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .main-title {
+            color: white;
+            font-family: 'Playfair Display', serif;
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 20px rgba(255,255,255,0.2);
+            line-height: 1.2;
+        }
+
+        .subtitle {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1.2rem;
+            font-weight: 400;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .piano-container {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            display: flex;
+            gap: 2px;
+            position: relative;
+            max-width: 95vw;
+            overflow-x: auto;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            z-index: 2;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+        }
+
+        .piano-container::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .piano-container::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .piano-container::-webkit-scrollbar-thumb {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+
+        .piano-key {
+            width: 60px;
+            height: 200px;
+            border: none;
+            border-radius: 0 0 8px 8px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: #1e293b;
+            overflow: hidden;
+        }
+
+        .white-key {
+            background: linear-gradient(to bottom, #ffffff 0%, #f8fafc 100%);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .black-key {
+            background: linear-gradient(to bottom, #1e293b 0%, #0f172a 100%);
+            color: white;
+            height: 120px;
+            margin-left: -30px;
+            margin-right: -30px;
+            z-index: 1;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .piano-key::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, rgba(255,255,255,0.1), transparent);
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .piano-key:hover::before {
+            opacity: 1;
+        }
+
+        .piano-key:active,
+        .piano-key.active {
+            transform: scale(0.98) translateY(2px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .white-key:active,
+        .white-key.active {
+            background: linear-gradient(to bottom, #e2e8f0 0%, #f1f5f9 100%);
+        }
+
+        .black-key:active,
+        .black-key.active {
+            background: linear-gradient(to bottom, #0f172a 0%, #1e293b 100%);
+        }
+
+        .key-label {
+            position: absolute;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.9rem;
+            opacity: 0.7;
+            transition: opacity 0.2s ease;
+        }
+
+        .piano-key:hover .key-label {
+            opacity: 1;
+        }
+
+        .instructions {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 1rem;
+            margin-top: 2rem;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+            max-width: 800px;
+            padding: 0 1rem;
+            line-height: 1.6;
+        }
+
+        @media (max-width: 768px) {
+            .main-title {
+                font-size: 2rem;
+            }
+
+            .subtitle {
+                font-size: 1rem;
+            }
+
+            .piano-key {
+                width: 40px;
+                height: 150px;
+            }
+
+            .black-key {
+                height: 90px;
+                margin-left: -20px;
+                margin-right: -20px;
+            }
+
+            .key-label {
+                font-size: 0.7rem;
+                bottom: 10px;
+            }
+
+            .instructions {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
 </head>
 
-<audio src="sound/a6-102820.mp3" id="a"></audio>
-<audio src="sound/a6-82015.mp3" id="s"></audio>
-<audio src="sound/b6-82017.mp3" id="d"></audio>
-<audio src="sound/c6-102822.mp3" id="f"></audio>
-<audio src="sound/d6-82020.mp3" id="j"></audio>
-<audio src="sound/e6-82016.mp3" id="k"></audio>
-<audio src="sound/f6-102819.mp3" id="l"></audio>
-<audio src="sound/g6-82013.mp3" id=";"></audio>
-
-<body style="background-color: #414141; margin: 0; display: flex; align-items: center; justify-content: center; height: 100vh;">
-    <div style="background-color: #fff; height: 200px; width: 1000px; display: flex; justify-content: center; justify-content: space-evenly; padding-top: 20px;">
-        <button class="but" style="padding-left: 50px; padding-right: 50px; height: 180px; background-color: white;">A</button>
-        <button class="but" style="padding-left: 50px; padding-right: 50px; height: 180px; background-color: black; color: white;">S</button>
-        <button class="but" style="padding-left: 50px; padding-right: 50px; height: 180px; background-color: white;">D</button>
-        <button class="but" style="padding-left: 50px; padding-right: 50px; height: 180px; background-color: black; color: white;">F</button>
-        <button class="but" style="padding-left: 50px; padding-right: 50px; height: 180px; background-color: white;">H</button>
-        <button class="but" style="padding-left: 50px; padding-right: 50px; height: 180px; background-color: black; color: white;">J</button>
-        <button class="but" style="padding-left: 50px; padding-right: 50px; height: 180px; background-color: white;">K</button>
-        <button class="but" style="padding-left: 50px; padding-right: 50px; height: 180px; background-color: black; color: white;">L</button>
+<body>
+    <div class="title-container">
+        <h1 class="main-title">Play Piano If You Miss Someone</h1>
+        <p class="subtitle">Let the music express what words cannot</p>
     </div>
+    <div class="piano-container">
+        <button class="piano-key white-key" data-key="q"><span class="key-label">Q</span></button>
+        <button class="piano-key black-key" data-key="w"><span class="key-label">W</span></button>
+        <button class="piano-key white-key" data-key="e"><span class="key-label">E</span></button>
+        <button class="piano-key black-key" data-key="r"><span class="key-label">R</span></button>
+        <button class="piano-key white-key" data-key="t"><span class="key-label">T</span></button>
+        <button class="piano-key black-key" data-key="y"><span class="key-label">Y</span></button>
+        <button class="piano-key white-key" data-key="u"><span class="key-label">U</span></button>
+        <button class="piano-key black-key" data-key="i"><span class="key-label">I</span></button>
+        <button class="piano-key white-key" data-key="o"><span class="key-label">O</span></button>
+        <button class="piano-key black-key" data-key="p"><span class="key-label">P</span></button>
+        <button class="piano-key white-key" data-key="a"><span class="key-label">A</span></button>
+        <button class="piano-key black-key" data-key="s"><span class="key-label">S</span></button>
+        <button class="piano-key white-key" data-key="d"><span class="key-label">D</span></button>
+        <button class="piano-key black-key" data-key="f"><span class="key-label">F</span></button>
+        <button class="piano-key white-key" data-key="g"><span class="key-label">G</span></button>
+        <button class="piano-key black-key" data-key="h"><span class="key-label">H</span></button>
+        <button class="piano-key white-key" data-key="j"><span class="key-label">J</span></button>
+        <button class="piano-key black-key" data-key="k"><span class="key-label">K</span></button>
+        <button class="piano-key white-key" data-key="l"><span class="key-label">L</span></button>
+        <button class="piano-key black-key" data-key=";"><span class="key-label">;</span></button>
+    </div>
+    <p class="instructions">Use your keyboard or mouse to play the piano. The keys Q through P and A through ; will play different notes. Let your emotions flow through the music.</p>
+
+    <audio src="sound/a6-102820.mp3" id="q" preload="auto"></audio>
+    <audio src="sound/a6-82015.mp3" id="w" preload="auto"></audio>
+    <audio src="sound/b6-82017.mp3" id="e" preload="auto"></audio>
+    <audio src="sound/c6-102822.mp3" id="r" preload="auto"></audio>
+    <audio src="sound/d6-82020.mp3" id="t" preload="auto"></audio>
+    <audio src="sound/e6-82016.mp3" id="y" preload="auto"></audio>
+    <audio src="sound/f6-102819.mp3" id="u" preload="auto"></audio>
+    <audio src="sound/g6-82013.mp3" id="i" preload="auto"></audio>
+    <audio src="sound/a6-102820.mp3" id="o" preload="auto"></audio>
+    <audio src="sound/a6-82015.mp3" id="p" preload="auto"></audio>
+    <audio src="sound/a6-102820.mp3" id="a" preload="auto"></audio>
+    <audio src="sound/a6-82015.mp3" id="s" preload="auto"></audio>
+    <audio src="sound/b6-82017.mp3" id="d" preload="auto"></audio>
+    <audio src="sound/c6-102822.mp3" id="f" preload="auto"></audio>
+    <audio src="sound/d6-82020.mp3" id="g" preload="auto"></audio>
+    <audio src="sound/e6-82016.mp3" id="h" preload="auto"></audio>
+    <audio src="sound/f6-102819.mp3" id="j" preload="auto"></audio>
+    <audio src="sound/g6-82013.mp3" id="k" preload="auto"></audio>
+    <audio src="sound/a6-102820.mp3" id="l" preload="auto"></audio>
+    <audio src="sound/a6-82015.mp3" id=";" preload="auto"></audio>
+
+    <script>
+        const pianoKeys = document.querySelectorAll('.piano-key');
+        const audioElements = document.querySelectorAll('audio');
+
+        // Function to play sound with fade in
+        function playSound(key) {
+            const audio = document.getElementById(key);
+            if (audio) {
+                audio.currentTime = 0;
+                audio.volume = 0;
+                audio.play().then(() => {
+                    // Fade in
+                    const fadeIn = setInterval(() => {
+                        if (audio.volume < 1) {
+                            audio.volume += 0.1;
+                        } else {
+                            clearInterval(fadeIn);
+                        }
+                    }, 50);
+                }).catch(error => console.log('Error playing sound:', error));
+            }
+        }
+
+        // Function to handle key press animation
+        function handleKeyPress(key) {
+            const keyElement = document.querySelector(`[data-key="${key}"]`);
+            if (keyElement) {
+                keyElement.classList.add('active');
+                playSound(key);
+            }
+        }
+
+        // Function to handle key release animation
+        function handleKeyRelease(key) {
+            const keyElement = document.querySelector(`[data-key="${key}"]`);
+            if (keyElement) {
+                keyElement.classList.remove('active');
+            }
+        }
+
+        // Mouse events for piano keys
+        pianoKeys.forEach(key => {
+            key.addEventListener('mousedown', () => {
+                handleKeyPress(key.dataset.key);
+            });
+
+            key.addEventListener('mouseup', () => {
+                handleKeyRelease(key.dataset.key);
+            });
+
+            key.addEventListener('mouseleave', () => {
+                handleKeyRelease(key.dataset.key);
+            });
+        });
+
+        // Keyboard events
+        document.addEventListener('keydown', (e) => {
+            handleKeyPress(e.key.toLowerCase());
+        });
+
+        document.addEventListener('keyup', (e) => {
+            handleKeyRelease(e.key.toLowerCase());
+        });
+
+        // Preload all audio files
+        audioElements.forEach(audio => {
+            audio.load();
+        });
+    </script>
 </body>
-
-<script>
-    const button=document.querySelectorAll('button')
-    button.forEach(function(but){
-        but.addEventListener('keydown', function(e){
-            const key=e.key
-            if(key==='a')
-               document.getElementById('a').play();
-            if(key==='s')
-               document.getElementById('s').play();
-            if(key==='d')
-               document.getElementById('d').play();
-            if(key==='f')
-               document.getElementById('f').play();
-            if(key==='j')
-               document.getElementById('j').play();
-            if(key==='k')
-               document.getElementById('k').play();
-            if(key==='l')
-               document.getElementById('l').play();
-            if(key===';')
-               document.getElementById(';').play();
-            
-        })
-    })
-</script>
-
 </html>
